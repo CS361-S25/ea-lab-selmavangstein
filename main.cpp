@@ -14,16 +14,17 @@ class Organism {
     };
 
     //create child with same behavior as parent
-    Organism* reproduce() {
+    Organism* reproduce(emp::Random random) {
         // Create a new organism with the same behavior as the parent
-        return new Organism(behavior);
+        Organism* offspring = new Organism(behavior);
+        offspring->mutate(random);
+        return offspring;
     };
 
-    void mutate(emp::Random random) { //YOU ARE HERE AND NEED TO FIX THIS
+    void mutate(emp::Random random) {
         // Mutate the behavior of the organism
-        behavior += random.GetDouble(-0.1, 0.1);
-        if (behavior < 0) behavior = 0;
-        if (behavior > 1) behavior = 1;
+        double mutation = random.GetRandNormal(0.0, 0.02);
+        behavior += mutation;
     };
 };
 
@@ -34,6 +35,7 @@ int main() {
         population.push_back(*new Organism(0.5));
     }
 
+    /*
     // Display the behavior of organism nr 50
     population[50].display();
     // Reproduce organism nr 50
@@ -43,10 +45,11 @@ int main() {
     //print adresses of parent and child
     std::cout << "Parent address: " << &population[50] << std::endl;
     std::cout << "Child address: " << child << std::endl;
+    */
 
     emp::Random random(1);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         //for each update, find organism with maximum behavior
         double max_behavior = 0;
         Organism max_individual = population[0];
@@ -56,12 +59,24 @@ int main() {
                 max_individual = j;
             }
         }
-        Organism* best_child = max_individual.reproduce();
-        population[0] = *best_child;
+        Organism* new_org = max_individual.reproduce(random);
+        //std::cout << "Best parent behavior: " << max_individual.behavior << std::endl;
+        //std::cout << "Best child behavior: " << new_org->behavior << std::endl;
+
+        int overwrite = random.GetUInt(0,100);
+        population[overwrite] = *new_org;
+
     }
     std::cout << "Population size: " << population.size() << std::endl;
     // Display the behavior of the best organism
-    population[0].display();
+    double max_behavior = 0;
+    for (Organism j : population) {
+        if (j.behavior > max_behavior) {
+            max_behavior = j.behavior;
+        }
+    }
+    // Display the behavior of the best organism
+    std::cout << "Best organism behavior: " << max_behavior << std::endl;
     return 0;
 }
 
